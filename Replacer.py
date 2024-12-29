@@ -1,15 +1,7 @@
 import csv
-import time
 import os
 
-def replace_strings_in_csv(input_csv_file, output_csv_file, data_csv_file):
-    """
-    Args:
-    input_csv_file (str): Файл .csv з новими ключами та рядками.
-    output_csv_file (str): Файл .csv, куди будуть вставлені перекладені рядки.
-    data_csv_file (str): Файл .csv, з якого будуть взяті перекладені рядки для заміни.
-    """
-    
+def load_replacement_data(data_csv_file):
     try:
         replacement_data = {}
         with open(data_csv_file, 'r', newline='', encoding='utf-8') as data_file:
@@ -18,7 +10,16 @@ def replace_strings_in_csv(input_csv_file, output_csv_file, data_csv_file):
                 key = row['key']
                 replacement_string = row['source']
                 replacement_data[key] = replacement_string
+        return replacement_data
+    except FileNotFoundError:
+        print(f"Файл {data_csv_file} не знайдено.")
+        return None
+    except Exception as e:
+        print(f"Сталася помилка під час завантаження даних: {str(e)}")
+        return None
 
+def replace_strings_in_csv(input_csv_file, output_csv_file, replacement_data):
+    try:
         with open(input_csv_file, 'r', newline='', encoding='utf-8') as input_file, \
                 open(output_csv_file, 'w', newline='', encoding='utf-8') as output_file:
             reader = csv.DictReader(input_file)
@@ -46,27 +47,28 @@ def replace_strings_in_csv(input_csv_file, output_csv_file, data_csv_file):
 
         print(f"Заміна завершена. Оновлений вміст збережено в {output_csv_file}.")
         print(f"Заміна була здійснена для {replaced_count} з {total_count} рядків.")
-    
-    except FileNotFoundError as e:
-        print(f"Файл не знайдено: {e.filename}")
+    except FileNotFoundError:
+        print(f"Файл {input_csv_file} не знайдено.")
     except Exception as e:
         print(f"Сталася помилка: {str(e)}")
 
+def get_file_input(prompt):
+    while True:
+        file_path = input(prompt).strip()
+        if os.path.isfile(file_path):
+            return file_path
+        print(f"Файл {file_path} не знайдено. Спробуйте ще раз.")
+
 def main():
     print(f'Програма для оновлення рядків під нові файли від veydzh3r.\nПеред початком використання, рекомендується прочитати інструкції у файлі «ReadMe»\n')
-    try:
-        input_csv_file = input('1. Введіть файл .csv з новими рядками (до прикладу Foxhole-CodeStrings_New.csv): ')
-        output_csv_file = input('2. Введіть назву нового файлу .csv, куди будуть вставлені перекладені рядки (до прикладу Foxhole-CodeStrings-Output): ')
-        data_csv_file = input('3. Введіть файл .csv, з якого будуть взяті перекладені рядки (до прикладу Foxhole-CodeStrings.csv): ')
-    except ValueError as e:
-        print(f'Файл не знайдено: {e}')
-        print('Перезапуск програми...')
-        time.sleep(1.5)
-        main()
-    if os.path.exists(input_csv_file) and os.path.exists(data_csv_file):
-        replace_strings_in_csv(input_csv_file, output_csv_file+'.csv', data_csv_file)
-    else:
-        main()
+    
+    input_csv_file = get_file_input('1. Введіть файл .csv з новими рядками (наприклад, Game_New.csv): ')
+    output_csv_file = input('2. Введіть назву нового файлу .csv (наприклад, Game_Output.csv): ').strip()
+    data_csv_file = get_file_input('3. Введіть файл .csv, з якого будуть взяті перекладені рядки (наприклад, Game.csv): ')
+
+    replacement_data = load_replacement_data(data_csv_file)
+    if replacement_data is not None:
+        replace_strings_in_csv(input_csv_file, output_csv_file, replacement_data)
 
 if __name__ == '__main__':
     main()
