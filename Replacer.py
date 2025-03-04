@@ -1,3 +1,4 @@
+import time
 import csv
 import os
 
@@ -52,19 +53,20 @@ def replace_strings_in_csv(input_csv_file, output_csv_file, replacement_data):
     except Exception as e:
         print(f"Сталася помилка: {str(e)}")
 
-def get_file_input(prompt):
-    while True:
-        file_path = input(prompt).strip()
-        if os.path.isfile(file_path):
-            return file_path
-        print(f"Файл {file_path} не знайдено. Спробуйте ще раз.")
+def file_input(prompt, extension):
+    file_path = input(f'\n{prompt}\n').strip()
+    if os.path.isfile(file_path) and file_path.endswith(extension):
+        return file_path
+    print(f"Файл не знайдено або недійсний формат файлу. Спробуйте ще раз.")
+    time.sleep(1)
+    return file_input(prompt, extension)
 
 def main():
     print(f'Програма для оновлення рядків під нові файли від veydzh3r.\nПеред початком використання, рекомендується прочитати інструкції у файлі «ReadMe»\n')
     
-    input_csv_file = get_file_input('1. Введіть файл .csv з новими рядками (наприклад, Game_New.csv): ')
-    output_csv_file = input('2. Введіть назву нового файлу .csv (наприклад, Game_Output.csv): ').strip()
-    data_csv_file = get_file_input('3. Введіть файл .csv, з якого будуть взяті перекладені рядки (наприклад, Game.csv): ')
+    data_csv_file = file_input('1. Введіть файл .csv, з якого будуть взяті перекладені рядки (наприклад, Game.csv): ', '.csv')
+    input_csv_file = file_input('2. Введіть файл .csv з новими рядками (наприклад, Game_New.csv): ', '.csv')
+    output_csv_file = input('3. Введіть назву нового файлу .csv (наприклад, Game_Output.csv): ').strip()
 
     replacement_data = load_replacement_data(data_csv_file)
     if replacement_data is not None:
